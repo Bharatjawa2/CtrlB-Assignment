@@ -3,8 +3,8 @@ package student
 import (
 	"encoding/json"
 	"errors"
-	"github.com/Bharatjawa2/CtrlB_Assignment/models"
-	"github.com/Bharatjawa2/CtrlB_Assignment/utils/response"
+	"github/Bharatjawa2/CtrlB_Assignment/models"
+	"github/Bharatjawa2/CtrlB_Assignment/utils/response"
 	"io"
 	"log/slog"
 	"net/http"
