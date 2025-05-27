@@ -8,18 +8,35 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+
+	"github.com/go-playground/validator/v10"
 )
 
 func New() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("Creating a Student")
 		var student models.Student
 		err:=json.NewDecoder(r.Body).Decode(&student)
 
 		if errors.Is(err,io.EOF) { // Body is Empty so ut give EOF Error
-			response.WriteJson(w,http.StatusBadRequest,err.Error())
+			response.WriteJson(w,http.StatusBadRequest,response.GeneralError(err))
 			return
 		}
-		slog.Info("Creating a Student")
+
+		if err!=nil{
+			response.WriteJson(w,http.StatusBadRequest,response.GeneralError(err))
+			return
+		}
+
+		// request validation
+		verr:=validator.New().Struct(student)
+		if verr!=nil{
+			validateError:=verr.(validator.ValidationErrors)
+			response.WriteJson(w,http.StatusBadRequest,response.ValidationError(validateError))
+			return
+		}
+
+
 		response.WriteJson(w,http.StatusCreated,map[string]string {"success":"OK"})
 	}
 }

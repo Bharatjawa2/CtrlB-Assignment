@@ -2,11 +2,11 @@ package models
 
 
 type Student struct {
-	ID        int           
-	FirstName string         
-	LastName  string         
-	Email     string         
-	Password  string         
-	Phone     string         
-	Address   string         
+	ID        int    `validate:"required"`
+	FirstName string `validate:"required"`
+	LastName  string `validate:"required"`
+	Email     string `validate:"required"`
+	Password  string `validate:"required"`
+	Phone     string `validate:"required"`
+	Address   string `validate:"required"`
 }
