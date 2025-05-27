@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github/Bharatjawa2/CtrlB_Assignment/internal/Storage/sqlite"
 	"github/Bharatjawa2/CtrlB_Assignment/internal/config"
 	"github/Bharatjawa2/CtrlB_Assignment/internal/http/Handlers/student"
 	"log"
@@ -17,9 +18,15 @@ func main(){
 	// load config
 	cfg:=config.MustLoad()
 	// database setup
+	storage,dberr:=sqlite.New(cfg)
+	if dberr!=nil{
+		log.Fatal(dberr)
+	}
+	slog.Info("Storage intialized", slog.String("env",cfg.Env),slog.String("version","1.0.0"))
+
 	// setup router
 	router:=http.NewServeMux()
-	router.HandleFunc("POST /api/students",student.New())
+	router.HandleFunc("POST /api/students",student.New(storage))
 	// setup server
 
 	server:=http.Server{
