@@ -34,6 +34,9 @@ func main(){
 
 	// Courses
 		router.HandleFunc("POST /api/courses",courses.CreateCourse(storage))
+
+	// Enrollment
+		
 	// setup server
 
 	server:=http.Server{
