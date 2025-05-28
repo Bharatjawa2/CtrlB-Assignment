@@ -20,7 +20,7 @@ func AuthMiddleware(secret string, next http.HandlerFunc) http.HandlerFunc {
 
 		token, err := jwt.Parse(cookie.Value, func(t *jwt.Token) (interface{}, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("Unexpected signing method")
+				return nil, fmt.Errorf("unexpected signing method")
 			}
 			return []byte(secret), nil
 		})
@@ -46,7 +46,7 @@ func AdminMiddleware(secret string, next http.HandlerFunc) http.HandlerFunc {
 		token, err := jwt.Parse(cookie.Value, func(t *jwt.Token) (interface{}, error) {
 			_, ok := t.Method.(*jwt.SigningMethodHMAC); 
 			if !ok {
-				return nil, fmt.Errorf("Unexpected signing method")
+				return nil, fmt.Errorf("unexpected signing method")
 			}
 			return []byte(secret), nil
 		})
@@ -86,7 +86,7 @@ func StudentMiddleware(secret string, next http.HandlerFunc) http.HandlerFunc {
 		token, err := jwt.Parse(cookie.Value, func(t *jwt.Token) (interface{}, error) {
 			_, ok := t.Method.(*jwt.SigningMethodHMAC);
 			if !ok {
-				return nil, fmt.Errorf("Unexpected signing method")
+				return nil, fmt.Errorf("unexpected signing method")
 			}
 			return []byte(secret), nil
 		})
