@@ -22,6 +22,7 @@ func New(cfg *config.Config)(*Sqlite,error){
 		return nil,err
 	}
 	
+	// Create students table
 	_,err=db.Exec(`CREATE TABLE IF NOT EXISTS students (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	FullName TEXT,
@@ -35,7 +36,20 @@ func New(cfg *config.Config)(*Sqlite,error){
 	)`)
 
 	if err!=nil{
-		return nil,err
+		return nil, fmt.Errorf("failed to create students table: %w", err)
+	}
+
+	// Create courses table
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS courses (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		Name TEXT NOT NULL,
+		Description TEXT,
+		Duration TEXT,
+		Credits INTEGER,
+		Price INTEGER
+	)`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create courses table: %w", err)
 	}
 
 	return &Sqlite{
