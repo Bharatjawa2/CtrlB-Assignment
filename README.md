@@ -68,8 +68,8 @@ A robust backend system for managing student admissions, courses, and enrollment
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd admission-portal
+   git clone https://github.com/Bharatjawa2/CtrlB-Assignment
+   cd CTRLB
    ```
 
 2. Install dependencies:
@@ -101,7 +101,7 @@ logging:
 
 1. Start the application:
    ```bash
-   go run cmd/main.go
+   go run cmd/CTRLB/main.go
    ```
 
 2. The server will start on `http://localhost:8082`
@@ -119,152 +119,109 @@ logging:
 
 #### Create Student
 ```http
-POST /api/v1/students
+POST /api/students
 Content-Type: application/json
 
 {
-    "name": "John Doe",
-    "email": "john@example.com",
-    "phone": "1234567890",
-    "address": "123 Main St"
+    {
+    "full_name": "Test2",
+    "Email": "test2@gmail.com",
+    "Password": "testing123",
+    "Age": 22,
+    "gender": "male",
+    "Phone_Number": "9812345644",
+    "DOB": "2003-05-37",
+    "Address": "Indore"
+  }
 }
 ```
 
 #### Get Student
 ```http
-GET /api/v1/students/{id}
+GET /api/students/{id}
+GET /api/students/all
 ```
 
 #### Update Student
 ```http
-PUT /api/v1/students/{id}
-Content-Type: application/json
+PUT /api/students/update
 
 {
-    "name": "John Doe Updated",
-    "email": "john.updated@example.com"
+    {
+    "ID": 10,
+    "full_name": "Pooja",
+    "Email": "pooja.verma@gmail.com",
+    "Password": "Pooja@2022",
+    "Age": 22,
+    "gender": "female",
+    "Phone_Number": "9090909090",
+    "DOB": "2002-10-14",
+    "Address": "Pune"
+  }
 }
-```
-
-#### Delete Student
-```http
-DELETE /api/v1/students/{id}
 ```
 
 ### Course Endpoints
 
 #### Create Course
 ```http
-POST /api/v1/courses
-Content-Type: application/json
+POST /api/courses
 
 {
-    "name": "Computer Science",
-    "description": "Bachelor of Computer Science",
-    "capacity": 100,
-    "requirements": "High School Diploma"
+    {
+    "ID": 10,
+    "Name": "Business Communication",
+    "Description": "Focuses on professional communication, presentation skills, business writing, and interpersonal effectiveness in corporate environments.",
+    "Duration": "2 months",
+    "Credits": 2,
+    "Price": 690
+  }
 }
 ```
 
 #### Get Course
 ```http
-GET /api/v1/courses/{id}
+GET /api/courses/{id}
+GET /api/courses/all
 ```
 
 #### Update Course
 ```http
-PUT /api/v1/courses/{id}
-Content-Type: application/json
+PUT /api/courses/update/{id}
 
 {
-    "name": "Computer Science Updated",
-    "capacity": 120
+     {
+    "ID": 8,
+    "Name": "Graphic Design Basics",
+    "Description": "A practical course on design principles, color theory, typography, and digital tools like Adobe Photoshop and Illustrator.",
+    "Duration": "4 months",
+    "Credits": 3,
+    "Price": 1099
+  },
 }
 ```
 
-#### Delete Course
-```http
-DELETE /api/v1/courses/{id}
-```
+### Enrollment Endpoints
 
-### Admission Endpoints
-
-#### Submit Application
+#### Enroll in Course
 ```http
-POST /api/v1/admissions
-Content-Type: application/json
+POST /api/enrollment
 
 {
     "student_id": 1,
     "course_id": 1,
-    "status": "pending",
-    "documents": ["transcript.pdf", "recommendation.pdf"]
 }
 ```
 
-#### Get Application
+#### Get Enrolled Students and Courses
 ```http
-GET /api/v1/admissions/{id}
+GET /api/enrolled/students/{id}
+GET /api/enrolled/courses/{id}
 ```
 
-#### Update Application Status
+#### Remove Enrollment
 ```http
-PUT /api/v1/admissions/{id}/status
-Content-Type: application/json
-
-{
-    "status": "approved"
-}
-```
-
-## Database Schema
-
-### Students Table
-```sql
-CREATE TABLE students (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    phone TEXT,
-    address TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-### Courses Table
-```sql
-CREATE TABLE courses (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT,
-    capacity INTEGER NOT NULL,
-    requirements TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-### Admissions Table
-```sql
-CREATE TABLE admissions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    student_id INTEGER NOT NULL,
-    course_id INTEGER NOT NULL,
-    status TEXT NOT NULL,
-    documents TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES students(id),
-    FOREIGN KEY (course_id) REFERENCES courses(id)
-);
-```
-
-## Testing
-
-Run the test suite:
-```bash
-go test ./...
+POST /api/unenrollment
 ```
 
 ## Docker Support
@@ -273,12 +230,12 @@ The application includes Docker support for easy deployment:
 
 1. Build the Docker image:
    ```bash
-   docker build -t admission-portal .
+   docker-compose up --build
    ```
 
 2. Run the container:
    ```bash
-   docker run -p 8080:8080 admission-portal
+    docker run -p 8082:8082 ctrlb-backend
    ```
 
 Or use Docker Compose:
@@ -293,40 +250,40 @@ The application uses the following data models to represent the core entities:
 ### Student Model
 ```go
 type Student struct {
-    ID        int64     `json:"id"`
-    Name      string    `json:"name"`
-    Email     string    `json:"email"`
-    Phone     string    `json:"phone"`
-    Address   string    `json:"address"`
-    CreatedAt time.Time `json:"created_at"`
-    UpdatedAt time.Time `json:"updated_at"`
+	Id              int64 
+	FullName        string 
+	Email           string 
+	Password        string 
+	Age             int    
+	Gender          string 
+	PhoneNumber     string 
+	DOB             string 
+	Address         string 
 }
+
 ```
 
 ### Course Model
 ```go
 type Course struct {
-    ID           int64     `json:"id"`
-    Name         string    `json:"name"`
-    Description  string    `json:"description"`
-    Capacity     int       `json:"capacity"`
-    Requirements string    `json:"requirements"`
-    CreatedAt    time.Time `json:"created_at"`
-    UpdatedAt    time.Time `json:"updated_at"`
+    ID          int64  
+    Name        string 
+    Description string 
+    Duration    string  
+    Credits     int 
+	Price		int	   
 }
+
 ```
 
-### Admission Model
+### Enrollment Model
 ```go
-type Admission struct {
-    ID        int64     `json:"id"`
-    StudentID int64     `json:"student_id"`
-    CourseID  int64     `json:"course_id"`
-    Status    string    `json:"status"`
-    Documents []string  `json:"documents"`
-    CreatedAt time.Time `json:"created_at"`
-    UpdatedAt time.Time `json:"updated_at"`
+type Enrollment struct {
+	ID        int64 
+	StudentID int64 
+	CourseID  int64 
 }
+
 ```
 
 Each model includes:
@@ -343,14 +300,4 @@ The models are designed to:
 - Facilitate API responses
 - Support database operations
 
-## Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
