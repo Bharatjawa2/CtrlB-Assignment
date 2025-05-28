@@ -344,6 +344,29 @@ func (s *Sqlite) EnrollStudent(studentID int64, courseID int64) (int64, error) {
 	return lastID, nil
 }
 
+func (s *Sqlite) UnenrollStudent(studentID int64, courseID int64) error {
+	stmt, err := s.Db.Prepare(`DELETE FROM enrollments WHERE student_id = ? AND course_id = ?`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(studentID, courseID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("no enrollment found for student %d in course %d", studentID, courseID)
+	}
+
+	return nil
+}
+
 
 func (s *Sqlite) GetStudentsByCourseID(courseID int64) ([]models.Student, error) {
 	rows, err := s.Db.Query(`

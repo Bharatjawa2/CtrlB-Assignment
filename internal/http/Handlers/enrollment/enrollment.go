@@ -99,3 +99,28 @@ func GetStudentsByCourseID(storage storage.Storage) http.HandlerFunc {
 		response.WriteJson(w, http.StatusOK, students)
 	}
 }
+
+func UnenrollStudent(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var enrollment models.Enrollment
+
+		err := json.NewDecoder(r.Body).Decode(&enrollment)
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, map[string]string{"error": "Invalid JSON"})
+			return
+		}
+
+		if enrollment.StudentID == 0 || enrollment.CourseID == 0 {
+			response.WriteJson(w, http.StatusBadRequest, map[string]string{"error": "Missing student_id or course_id"})
+			return
+		}
+
+		err = storage.UnenrollStudent(enrollment.StudentID, enrollment.CourseID)
+		if err != nil {
+			response.WriteJson(w, http.StatusNotFound, map[string]string{"error": err.Error()})
+			return
+		}
+
+		response.WriteJson(w, http.StatusOK, map[string]string{"message": "Student unenrolled from course successfully"})
+	}
+}

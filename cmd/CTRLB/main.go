@@ -45,6 +45,7 @@ func main(){
 
 	// Enrollment
 		router.HandleFunc("POST /api/enrollment",enrollment.EnrollStudent(storage))
+		router.HandleFunc("POST /api/unenrollment",enrollment.UnenrollStudent(storage))		
 		router.HandleFunc("GET /api/enrolled/students/{id}",enrollment.GetCoursesByStudentID(storage))
 		router.HandleFunc("GET /api/enrolled/courses/{id}",enrollment.GetStudentsByCourseID(storage))
 

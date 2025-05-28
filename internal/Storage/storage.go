@@ -20,6 +20,7 @@ type Storage interface{
 
 	// Enrollment
 	EnrollStudent(studentID int64, courseID int64)(int64,error)
+	UnenrollStudent(studentID int64, courseID int64) error
 	GetCoursesByStudentID(studentID int64) ([]models.Course, error)
 	GetStudentsByCourseID(courseID int64) ([]models.Student, error)
 }
