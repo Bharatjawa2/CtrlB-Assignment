@@ -54,3 +54,14 @@ func CreateCourse(storage storage.Storage) http.HandlerFunc{
 		response.WriteJson(w, http.StatusCreated, map[string]int64{"id": lastCourseId})
 	}
 }
+
+func GetAllCourses(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		courses, err := storage.GetAllCourses()
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "Failed to fetch courses"})
+			return
+		}
+		response.WriteJson(w, http.StatusOK, courses)
+	}
+}

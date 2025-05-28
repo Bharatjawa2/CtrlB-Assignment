@@ -231,6 +231,31 @@ func (s *Sqlite) CreateCourse(Name string, Description string, Duration string, 
 	return lastid, nil
 }
 
+func (s *Sqlite) GetAllCourses() ([]models.Course, error) {
+	rows, err := s.Db.Query("SELECT id, Name, Description, Duration, Credits, Price FROM courses")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var courses []models.Course
+	for rows.Next() {
+		var course models.Course
+		err := rows.Scan(&course.ID, &course.Name, &course.Description, &course.Duration, &course.Credits, &course.Price)
+		if err != nil {
+			return nil, err
+		}
+		courses = append(courses, course)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return courses, nil
+}
+
+
 // Enrollment
 
 func (s *Sqlite) EnrollStudent(studentID int64, courseID int64) (int64, error) {

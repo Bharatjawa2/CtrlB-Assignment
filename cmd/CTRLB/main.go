@@ -38,6 +38,7 @@ func main(){
 
 	// Courses
 		router.HandleFunc("POST /api/courses",courses.CreateCourse(storage))
+		router.HandleFunc("GET /api/courses/all",courses.GetAllCourses(storage))
 
 	// Enrollment
 		router.HandleFunc("POST /api/enrollment",enrollment.EnrollStudent(storage))
