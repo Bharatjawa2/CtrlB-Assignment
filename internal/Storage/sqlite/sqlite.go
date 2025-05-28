@@ -2,7 +2,9 @@ package sqlite
 
 import (
 	"database/sql"
+	"fmt"
 	"github/Bharatjawa2/CtrlB_Assignment/internal/config"
+	"github/Bharatjawa2/CtrlB_Assignment/models"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -20,9 +22,14 @@ func New(cfg *config.Config)(*Sqlite,error){
 	
 	_,err=db.Exec(`CREATE TABLE IF NOT EXISTS students (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	name TEXT,
-	email TEXT,
-	age INTEGER
+	FullName TEXT,
+	Email TEXT,
+	Password TEXT,
+	Age INTEGER,
+	Gender TEXT,
+	PhoneNumber TEXT,
+	DOB TEXT,
+	Address TEXT
 	)`)
 
 	if err!=nil{
@@ -34,15 +41,15 @@ func New(cfg *config.Config)(*Sqlite,error){
 	},nil
 }
 
-func (s *Sqlite) CreateStudent(name string,email string, age int)(int64,error){
-	stmt,err:=s.Db.Prepare("INSERT INTO students (name,email,age ) VALUES (?,?,?)")
+func (s *Sqlite) CreateStudent(FullName string,Email string,Password string, Age int,Gender string,PhoneNumber string,DOB string,Address string)(int64,error){
+	stmt,err:=s.Db.Prepare("INSERT INTO students (FullName,Email,Password,Age,Gender,PhoneNumber,DOB,Address) VALUES (?,?,?,?,?,?,?,?)")
 	if err!=nil{
 		return 0,err
 	}
 
 	defer stmt.Close()
 
-	result,err:=stmt.Exec(name,email,age)
+	result,err:=stmt.Exec(FullName,Email,Password,Age,Gender,PhoneNumber,DOB,Address)
 	if err!=nil{
 		return 0,err
 	}
@@ -53,4 +60,25 @@ func (s *Sqlite) CreateStudent(name string,email string, age int)(int64,error){
 	}
 
 	return lastid ,nil
+}
+
+
+func (s *Sqlite) GetStudentById(id int64) (models.Student,error){
+	stmt,err:=s.Db.Prepare("SELECT * FROM students WHERE id = ? LIMIT 1")
+	if err!=nil{
+		return models.Student{},err
+	}
+	defer stmt.Close()
+
+	var student models.Student
+
+	err=stmt.QueryRow(id).Scan(&student.Id, &student.FullName, &student.Email, &student.Password, &student.Age, &student.Gender,& student.PhoneNumber,&student.DOB,&student.Address)
+	if err!=nil{
+		if err==sql.ErrNoRows{
+			return models.Student{},fmt.Errorf("No Student Found with id %s",fmt.Sprint(id))
+		}
+		return models.Student{},fmt.Errorf("Query Error: %w",err)
+	}
+
+	return student,nil
 }
