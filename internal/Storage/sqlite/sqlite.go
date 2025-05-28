@@ -52,7 +52,7 @@ func New(cfg *config.Config) (*Sqlite, error) {
 	}
 
 	// Create Enrollment table
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS enrollment (
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS enrollments (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		student_id INTEGER,
 		course_id INTEGER,
@@ -144,6 +144,69 @@ func (s *Sqlite) EnrollStudent(studentID int64, courseID int64) (int64, error) {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(studentID, courseID)
-	return 0, err
+	result, err := stmt.Exec(studentID, courseID)
+	if err != nil {
+		return 0, err
+	}
+
+	lastID, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return lastID, nil
+}
+
+
+func (s *Sqlite) GetStudentsByCourseID(courseID int64) ([]models.Student, error) {
+	rows, err := s.Db.Query(`
+		SELECT students.id, students.FullName, students.Email, students.Password, students.Age, 
+		       students.Gender, students.PhoneNumber, students.DOB, students.Address
+		FROM students
+		INNER JOIN enrollments ON students.id = enrollments.student_id
+		WHERE enrollments.course_id = ?
+	`, courseID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var students []models.Student
+	for rows.Next() {
+		var student models.Student
+		err := rows.Scan(&student.Id, &student.FullName, &student.Email, &student.Password, &student.Age,
+			&student.Gender, &student.PhoneNumber, &student.DOB, &student.Address)
+		if err != nil {
+			return nil, err
+		}
+		students = append(students, student)
+	}
+	return students, nil
+}
+
+func (s *Sqlite) GetCoursesByStudentID(studentID int64) ([]models.Course, error) {
+	rows, err := s.Db.Query(`
+		SELECT courses.id, courses.Name, courses.Description, courses.Duration, 
+		       courses.Credits, courses.Price
+		FROM courses
+		INNER JOIN enrollments ON courses.id = enrollments.course_id
+		WHERE enrollments.student_id = ?
+	`, studentID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var courses []models.Course
+	for rows.Next() {
+		var course models.Course
+		err := rows.Scan(&course.ID, &course.Name, &course.Description, &course.Duration, &course.Credits, &course.Price)
+		if err != nil {
+			return nil, err
+		}
+		courses = append(courses, course)
+	}
+	return courses, nil
 }

@@ -10,6 +10,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -49,5 +50,52 @@ func EnrollStudent(storage storage.Storage) http.HandlerFunc{
 		}
 		response.WriteJson(w, http.StatusCreated, map[string]int64{"id": lastEnrollId})
 	
+	}
+}
+
+func GetCoursesByStudentID(storage storage.Storage) http.HandlerFunc{
+	return func(w http.ResponseWriter,r *http.Request){
+		slog.Info("List of Courses Registered by Student")
+		
+		// Extract student ID from URL
+		id := r.PathValue("id")
+		studentId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+		
+		// Fetch courses by student ID
+		courses, err := storage.GetCoursesByStudentID(studentId)
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		response.WriteJson(w, http.StatusOK, courses)
+
+	}
+}
+
+func GetStudentsByCourseID(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("List of Students Registered in Course")
+
+		// Extract course ID from URL
+		id := r.PathValue("id")
+		courseID, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+
+		// Fetch students by course ID
+		students, err := storage.GetStudentsByCourseID(courseID)
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		response.WriteJson(w, http.StatusOK, students)
 	}
 }
