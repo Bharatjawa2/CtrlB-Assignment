@@ -3,5 +3,8 @@ storage_path: "storage/storage.db"
 http_server:
   address: "localhost:8082"
 jwt_secret: "CTRLB"
+admin:
+  email: "admin@gmail.com"
+  password: "admin@123"
 
   

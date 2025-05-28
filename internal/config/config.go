@@ -11,11 +11,18 @@ import (
 type HTTPServer struct{
 	Addr string `yaml:"address" env-required:"true"`
 }
+
+type AdminConfig struct {
+	Email    string `yaml:"email"`
+	Password string `yaml:"password"`
+}
+
 type Config struct{
 	Env string `yaml:"env" env:"ENV" env-required:"true" env-default:"production"`
 	StoragePath string `yaml:"storage_path" env-required:"true"`
 	HTTPServer `yaml:"http_server"`
 	JWTSecret string `yaml:"jwt_secret"`
+	Admin AdminConfig  `yaml:"admin" env-required:"true"`
 }
 
 func MustLoad() *Config{

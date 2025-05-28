@@ -9,6 +9,7 @@ import (
 	"github/Bharatjawa2/CtrlB_Assignment/models"
 	"github/Bharatjawa2/CtrlB_Assignment/utils/response"
 	"github/Bharatjawa2/CtrlB_Assignment/utils/security"
+	"github/Bharatjawa2/CtrlB_Assignment/internal/http/middlewares"
 	"io"
 	"log/slog"
 	"net/http"
@@ -94,6 +95,7 @@ func LoginStudent(storage storage.Storage, cfg config.Config) http.HandlerFunc {
 		claims := jwt.MapClaims{
 			"email": student.Email,
 			"id":    student.Id,
+			"role":  "student",  
 			"exp":   time.Now().Add(24 * time.Hour).Unix(),
 		}
 
@@ -154,26 +156,19 @@ func GetAllStudents(storage storage.Storage) http.HandlerFunc{
 
 func UpdateStudent(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
-		if id == "" {
-			response.WriteJson(w, http.StatusBadRequest, map[string]string{"error": "Missing student ID"})
-			return
-		}
-
-		studentId, err := strconv.ParseInt(id, 10, 64)
-		if err != nil {
-			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+		studentID, ok := r.Context().Value(middlewares.StudentIDKey).(int64)
+		if !ok {
+			http.Error(w, "Unauthorized: No student ID found", http.StatusUnauthorized)
 			return
 		}
 
 		// Fetch existing student first
-		existingStudent, err := storage.GetStudentById(studentId)
+		existingStudent, err := storage.GetStudentById(studentID)
 		if err != nil {
 			response.WriteJson(w, http.StatusNotFound, map[string]string{"error": "Student not found"})
 			return
 		}
 
-		// Decode incoming JSON into a map to check which fields are provided
 		var incomingData map[string]interface{}
 		err = json.NewDecoder(r.Body).Decode(&incomingData)
 		if err != nil {
@@ -181,7 +176,7 @@ func UpdateStudent(storage storage.Storage) http.HandlerFunc {
 			return
 		}
 
-		// Update only fields that are present in incomingData
+		// Update only fields present
 		if fullName, ok := incomingData["full_name"].(string); ok {
 			existingStudent.FullName = fullName
 		}
@@ -192,7 +187,7 @@ func UpdateStudent(storage storage.Storage) http.HandlerFunc {
 			existingStudent.Password = password
 		}
 		if ageFloat, ok := incomingData["age"].(float64); ok {
-			existingStudent.Age = int(ageFloat) // JSON numbers come as float64
+			existingStudent.Age = int(ageFloat)
 		}
 		if gender, ok := incomingData["gender"].(string); ok {
 			existingStudent.Gender = gender
@@ -207,8 +202,7 @@ func UpdateStudent(storage storage.Storage) http.HandlerFunc {
 			existingStudent.Address = address
 		}
 
-		// Now update student in storage
-		err = storage.UpdateStudent(studentId, existingStudent)
+		err = storage.UpdateStudent(studentID, existingStudent)
 		if err != nil {
 			response.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "Failed to update student"})
 			return
@@ -217,6 +211,7 @@ func UpdateStudent(storage storage.Storage) http.HandlerFunc {
 		response.WriteJson(w, http.StatusOK, map[string]string{"message": "Student updated successfully"})
 	}
 }
+
 
 func GetStudentByEmail(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
