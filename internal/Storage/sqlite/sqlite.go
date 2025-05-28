@@ -176,7 +176,7 @@ func (s *Sqlite) GetAllStudents() ([]models.Student, error) {
 	return students, nil
 }
 
-func (s *Sqlite) UpdateStudent(id int64, student models.Student) error {
+func (s *Sqlite) UpdateStudent(id int64, student models.Student) (error) {
 	stmt, err := s.Db.Prepare(`UPDATE students SET 
 		FullName = ?, 
 		Email = ?, 
@@ -231,6 +231,26 @@ func (s *Sqlite) CreateCourse(Name string, Description string, Duration string, 
 	return lastid, nil
 }
 
+func (s *Sqlite) GetCourseById(id int64) (models.Course, error) {
+	stmt, err := s.Db.Prepare(`SELECT id, Name, Description, Duration, Credits, Price FROM courses WHERE id = ? LIMIT 1`)
+	if err != nil {
+		return models.Course{}, err
+	}
+	defer stmt.Close()
+
+	var course models.Course
+	err = stmt.QueryRow(id).Scan(&course.ID, &course.Name, &course.Description, &course.Duration, &course.Credits, &course.Price)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.Course{}, fmt.Errorf("no course found with id %d", id)
+		}
+		return models.Course{}, err
+	}
+
+	return course, nil
+}
+
+
 func (s *Sqlite) GetAllCourses() ([]models.Course, error) {
 	rows, err := s.Db.Query("SELECT id, Name, Description, Duration, Credits, Price FROM courses")
 	if err != nil {
@@ -254,6 +274,52 @@ func (s *Sqlite) GetAllCourses() ([]models.Course, error) {
 
 	return courses, nil
 }
+
+func (s *Sqlite) UpdateCourse(id int64, course models.Course) error {
+	stmt, err := s.Db.Prepare(`
+		UPDATE courses SET 
+			Name = ?, 
+			Description = ?, 
+			Duration = ?, 
+			Credits = ?, 
+			Price = ? 
+		WHERE id = ?
+	`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(course.Name, course.Description, course.Duration, course.Credits, course.Price, id)
+	return err
+}
+
+func (s *Sqlite) SearchCoursesByName(name string) ([]models.Course, error) {
+	query := `SELECT id, Name, Description, Duration, Credits, Price FROM courses WHERE Name LIKE ?`
+	rows, err := s.Db.Query(query, "%"+name+"%")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var courses []models.Course
+	for rows.Next() {
+		var course models.Course
+		err := rows.Scan(&course.ID, &course.Name, &course.Description, &course.Duration, &course.Credits, &course.Price)
+		if err != nil {
+			return nil, err
+		}
+		courses = append(courses, course)
+	}
+
+	if len(courses) == 0 {
+		return nil, fmt.Errorf("no courses found with name containing: %s", name)
+	}
+
+	return courses, nil
+}
+
+
 
 
 // Enrollment

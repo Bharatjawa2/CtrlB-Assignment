@@ -13,7 +13,10 @@ type Storage interface{
 
 	// Course
 	CreateCourse(name string,description string,duration string,credits int,price int) (int64,error)
+	GetCourseById(id int64) (models.Course,error)
 	GetAllCourses() ([]models.Course, error)
+	UpdateCourse(id int64, course models.Course) (error)
+	SearchCoursesByName(name string) ([]models.Course, error)
 
 	// Enrollment
 	EnrollStudent(studentID int64, courseID int64)(int64,error)

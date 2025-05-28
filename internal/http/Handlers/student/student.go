@@ -100,35 +100,69 @@ func GetAllStudents(storage storage.Storage) http.HandlerFunc{
 	}
 }
 
-func UpdateStudent(storage storage.Storage) http.HandlerFunc{
-	return func(w http.ResponseWriter, r *http.Request){
-		id:=r.PathValue("id")
-		if id==""{
+func UpdateStudent(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		if id == "" {
 			response.WriteJson(w, http.StatusBadRequest, map[string]string{"error": "Missing student ID"})
 			return
 		}
 
-		studentId,err:=strconv.ParseInt(id,10,64)
-		if err!=nil{
-			response.WriteJson(w, http.StatusBadRequest,response.GeneralError(err))
+		studentId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
 			return
 		}
 
-		var student models.Student
-		err = json.NewDecoder(r.Body).Decode(&student)
+		// Fetch existing student first
+		existingStudent, err := storage.GetStudentById(studentId)
+		if err != nil {
+			response.WriteJson(w, http.StatusNotFound, map[string]string{"error": "Student not found"})
+			return
+		}
+
+		// Decode incoming JSON into a map to check which fields are provided
+		var incomingData map[string]interface{}
+		err = json.NewDecoder(r.Body).Decode(&incomingData)
 		if err != nil {
 			response.WriteJson(w, http.StatusBadRequest, map[string]string{"error": "Invalid JSON"})
 			return
 		}
 
-		// validate Student
-		err = storage.UpdateStudent(studentId, student)
+		// Update only fields that are present in incomingData
+		if fullName, ok := incomingData["full_name"].(string); ok {
+			existingStudent.FullName = fullName
+		}
+		if email, ok := incomingData["email"].(string); ok {
+			existingStudent.Email = email
+		}
+		if password, ok := incomingData["password"].(string); ok {
+			existingStudent.Password = password
+		}
+		if ageFloat, ok := incomingData["age"].(float64); ok {
+			existingStudent.Age = int(ageFloat) // JSON numbers come as float64
+		}
+		if gender, ok := incomingData["gender"].(string); ok {
+			existingStudent.Gender = gender
+		}
+		if phone, ok := incomingData["phone_number"].(string); ok {
+			existingStudent.PhoneNumber = phone
+		}
+		if dob, ok := incomingData["dob"].(string); ok {
+			existingStudent.DOB = dob
+		}
+		if address, ok := incomingData["address"].(string); ok {
+			existingStudent.Address = address
+		}
+
+		// Now update student in storage
+		err = storage.UpdateStudent(studentId, existingStudent)
 		if err != nil {
 			response.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "Failed to update student"})
 			return
 		}
+
 		response.WriteJson(w, http.StatusOK, map[string]string{"message": "Student updated successfully"})
-	
 	}
 }
 
