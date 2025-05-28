@@ -14,6 +14,8 @@ type Sqlite struct{
 }
 
 
+// Students 
+
 func New(cfg *config.Config)(*Sqlite,error){
 	db,err:=sql.Open("sqlite3",cfg.StoragePath)
 	if err!=nil{
@@ -81,4 +83,29 @@ func (s *Sqlite) GetStudentById(id int64) (models.Student,error){
 	}
 
 	return student,nil
+}
+
+
+
+// Courses
+
+func (s *Sqlite) CreateCourse(Name string,Description string,Duration string, Credits int, Price int)(int64,error){
+	stmt,err:=s.Db.Prepare("INSERT INTO courses (Name,Description,Duration,Credits,Price) VALUES (?,?,?,?,?)")
+	if err!=nil{
+		return 0,err
+	}
+
+	defer stmt.Close()
+
+	result,err:=stmt.Exec(Name,Description,Duration,Credits,Price)
+	if err!=nil{
+		return 0,err
+	}
+
+	lastid,err:=result.LastInsertId()
+	if err!=nil{
+		return 0,err
+	}
+
+	return lastid ,nil
 }

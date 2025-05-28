@@ -15,31 +15,31 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func New(storage storage.Storage) http.HandlerFunc {
+func Register(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		slog.Info("Creating a Student")
 		var student models.Student
-		err:=json.NewDecoder(r.Body).Decode(&student)
+		err := json.NewDecoder(r.Body).Decode(&student)
 
-		if errors.Is(err,io.EOF) { // Body is Empty so ut give EOF Error
-			response.WriteJson(w,http.StatusBadRequest,response.GeneralError(err))
+		if errors.Is(err, io.EOF) { // Body is Empty so ut give EOF Error
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
 			return
 		}
 
-		if err!=nil{
-			response.WriteJson(w,http.StatusBadRequest,response.GeneralError(err))
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
 			return
 		}
 
 		// request validation
-		verr:=validator.New().Struct(student)
-		if verr!=nil{
-			validateError:=verr.(validator.ValidationErrors)
-			response.WriteJson(w,http.StatusBadRequest,response.ValidationError(validateError))
+		verr := validator.New().Struct(student)
+		if verr != nil {
+			validateError := verr.(validator.ValidationErrors)
+			response.WriteJson(w, http.StatusBadRequest, response.ValidationError(validateError))
 			return
 		}
 
-		lastid,err:=storage.CreateStudent( 
+		lastid, err := storage.CreateStudent(
 			student.FullName,
 			student.Email,
 			student.Password,
@@ -50,33 +50,32 @@ func New(storage storage.Storage) http.HandlerFunc {
 			student.Address,
 		)
 
-		slog.Info("User created successfully", slog.String("User Id: ",fmt.Sprint(lastid)))
+		slog.Info("User created successfully", slog.String("User Id: ", fmt.Sprint(lastid)))
 
-		if err!=nil{
-			response.WriteJson(w,http.StatusInternalServerError,err)
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
 		}
 
-
-
-		response.WriteJson(w,http.StatusCreated,map[string]int64 {"id":lastid})
+		response.WriteJson(w, http.StatusCreated, map[string]int64{"id": lastid})
 	}
 }
 
 func GetById(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id:=r.PathValue("id")
-		slog.Info("getting a student",slog.String("id", id))
-		Intid,err:=strconv.ParseInt(id,10,64)
-		if err!=nil{
-			response.WriteJson(w,http.StatusBadRequest,response.GeneralError(err))
+		id := r.PathValue("id")
+		slog.Info("getting a student", slog.String("id", id))
+		Intid, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
 			return
 		}
-		student,err:=storage.GetStudentById(Intid)
-		if err!=nil{
-			slog.Info("Error getting user", slog.String("Id",id))
-			response.WriteJson(w,http.StatusInternalServerError,response.GeneralError(err))
+		student, err := storage.GetStudentById(Intid)
+		if err != nil {
+			slog.Info("Error getting user", slog.String("Id", id))
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
 			return
 		}
-		response.WriteJson(w,http.StatusOK,student)
+		response.WriteJson(w, http.StatusOK, student)
 	}
 }

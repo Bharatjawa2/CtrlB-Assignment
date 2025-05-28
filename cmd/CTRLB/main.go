@@ -4,6 +4,7 @@ import (
 	"context"
 	"github/Bharatjawa2/CtrlB_Assignment/internal/Storage/sqlite"
 	"github/Bharatjawa2/CtrlB_Assignment/internal/config"
+	"github/Bharatjawa2/CtrlB_Assignment/internal/http/Handlers/courses"
 	"github/Bharatjawa2/CtrlB_Assignment/internal/http/Handlers/student"
 	"log"
 	"log/slog"
@@ -26,8 +27,13 @@ func main(){
 
 	// setup router
 	router:=http.NewServeMux()
-	router.HandleFunc("POST /api/students",student.New(storage))
-	router.HandleFunc("GET /api/students/{id}",student.GetById(storage))
+
+	// Student
+		router.HandleFunc("POST /api/students",student.Register(storage))
+		router.HandleFunc("GET /api/students/{id}",student.GetById(storage))
+
+	// Courses
+		router.HandleFunc("POST /api/courses",courses.CreateCourse(storage))
 	// setup server
 
 	server:=http.Server{
