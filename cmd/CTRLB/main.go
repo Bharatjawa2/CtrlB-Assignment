@@ -31,10 +31,10 @@ func main(){
 	// setup router
 	router:=http.NewServeMux()
 
+	// Basic Route
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
     	w.Write([]byte("Welcome to CtrlB Backend!"))
 	})
-
 
 	// Admin
 		router.HandleFunc("POST /api/admin",admin.LoginAdmin(*cfg))
@@ -63,13 +63,12 @@ func main(){
 		router.HandleFunc("GET /api/enrolled/courses/{id}",middlewares.AdminMiddleware(cfg.JWTSecret,enrollment.GetStudentsByCourseID(storage)))
 
 	// setup server
-
 	server:=http.Server{
 		Addr: cfg.Addr,
 		Handler: router,
 	}
 
-	slog.Info("Server Started!!! %s",slog.String("address",cfg.HTTPServer.Addr))
+	slog.Info("Server Started!!! ",slog.String("address",cfg.HTTPServer.Addr))
 
 	done:=make(chan os.Signal,1) // channel
 	signal.Notify(done,os.Interrupt,syscall.SIGINT,syscall.SIGTERM)

@@ -2,6 +2,8 @@ env: "dev"
 storage_path: "storage/storage.db"
 http_server:
   address: ":8082"
+  # address : "localhost:8082" // If Running server locally
+  # address : ":8082"         // Deply on Docker 
 jwt_secret: "CTRLB"
 admin:
   email: "admin@gmail.com"

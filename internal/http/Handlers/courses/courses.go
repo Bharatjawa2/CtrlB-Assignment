@@ -78,7 +78,7 @@ func GetCourseById(storage storage.Storage) http.HandlerFunc{
 func GetAllCourses(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		courses, err := storage.GetAllCourses()
-		if err != nil {
+		if err!=nil {
 			response.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "Failed to fetch courses"})
 			return
 		}
@@ -89,13 +89,12 @@ func GetAllCourses(storage storage.Storage) http.HandlerFunc {
 func UpdateCourse(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
-		if id == "" {
+		if id=="" {
 			response.WriteJson(w, http.StatusBadRequest, map[string]string{"error": "Missing course ID"})
 			return
 		}
-
 		courseId, err := strconv.ParseInt(id, 10, 64)
-		if err != nil {
+		if err!=nil {
 			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
 			return
 		}
@@ -116,19 +115,24 @@ func UpdateCourse(storage storage.Storage) http.HandlerFunc {
 		}
 
 		// Update only fields present in JSON
-		if name, ok := incomingData["name"].(string); ok {
+		name, ok := incomingData["name"].(string); 
+		if ok {
 			existingCourse.Name = name
 		}
-		if desc, ok := incomingData["description"].(string); ok {
+		desc, ok := incomingData["description"].(string); 
+		if ok {
 			existingCourse.Description = desc
 		}
-		if durationStr, ok := incomingData["duration"].(string); ok {
+		durationStr, ok := incomingData["duration"].(string);
+		if ok {
 			existingCourse.Duration = durationStr
 		}
-		if creditsFloat, ok := incomingData["credits"].(float64); ok {
+		creditsFloat, ok := incomingData["credits"].(float64);
+		if ok {
 			existingCourse.Credits = int(creditsFloat)
 		}
-		if priceFloat, ok := incomingData["price"].(float64); ok {
+		priceFloat, ok := incomingData["price"].(float64);
+		if ok {
 			existingCourse.Price = int(priceFloat)
 		}
 

@@ -14,6 +14,7 @@ type Sqlite struct {
 	Db *sql.DB
 }
 
+// Making Table
 
 func New(cfg *config.Config) (*Sqlite, error) {
 	db, err := sql.Open("sqlite3", cfg.StoragePath)
@@ -102,8 +103,6 @@ func (s *Sqlite) LoginStudent(email string, password string) (models.Student, er
     }
     return student, nil
 }
-
-
 
 
 func (s *Sqlite) GetStudentByEmail(email string) (models.Student, error) {
@@ -225,7 +224,6 @@ func (s *Sqlite) Logout()(error){
 }
 
 
-
 // Courses
 
 func (s *Sqlite) CreateCourse(Name string, Description string, Duration string, Credits int, Price int) (int64, error) {
@@ -267,7 +265,6 @@ func (s *Sqlite) GetCourseById(id int64) (models.Course, error) {
 
 	return course, nil
 }
-
 
 func (s *Sqlite) GetAllCourses() ([]models.Course, error) {
 	rows, err := s.Db.Query("SELECT id, Name, Description, Duration, Credits, Price FROM courses")
@@ -337,9 +334,6 @@ func (s *Sqlite) SearchCoursesByName(name string) ([]models.Course, error) {
 	return courses, nil
 }
 
-
-
-
 // Enrollment
 
 func (s *Sqlite) EnrollStudent(studentID int64, courseID int64) (int64, error) {
@@ -384,7 +378,6 @@ func (s *Sqlite) UnenrollStudent(studentID int64, courseID int64) error {
 
 	return nil
 }
-
 
 func (s *Sqlite) GetStudentsByCourseID(courseID int64) ([]models.Student, error) {
 	rows, err := s.Db.Query(`

@@ -4,7 +4,6 @@ import (
 	"flag"
 	"log"
 	"os"
-
 	"github.com/ilyakaznacheev/cleanenv"
 )
 

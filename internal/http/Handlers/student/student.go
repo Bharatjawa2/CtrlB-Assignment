@@ -177,28 +177,36 @@ func UpdateStudent(storage storage.Storage) http.HandlerFunc {
 		}
 
 		// Update only fields present
-		if fullName, ok := incomingData["full_name"].(string); ok {
+		fullName, ok := incomingData["full_name"].(string);
+		if ok {
 			existingStudent.FullName = fullName
 		}
-		if email, ok := incomingData["email"].(string); ok {
+		email, ok := incomingData["email"].(string);
+		if ok {
 			existingStudent.Email = email
 		}
-		if password, ok := incomingData["password"].(string); ok {
+		password, ok := incomingData["password"].(string);
+		if ok {
 			existingStudent.Password = password
 		}
-		if ageFloat, ok := incomingData["age"].(float64); ok {
+		ageFloat, ok := incomingData["age"].(float64);
+		if ok {
 			existingStudent.Age = int(ageFloat)
 		}
-		if gender, ok := incomingData["gender"].(string); ok {
+		gender, ok := incomingData["gender"].(string); 
+		if ok {
 			existingStudent.Gender = gender
 		}
-		if phone, ok := incomingData["phone_number"].(string); ok {
+		phone, ok := incomingData["phone_number"].(string);
+		if ok {
 			existingStudent.PhoneNumber = phone
 		}
-		if dob, ok := incomingData["dob"].(string); ok {
+		dob, ok := incomingData["dob"].(string);
+		if ok {
 			existingStudent.DOB = dob
 		}
-		if address, ok := incomingData["address"].(string); ok {
+		address, ok := incomingData["address"].(string);
+		if ok {
 			existingStudent.Address = address
 		}
 
@@ -207,7 +215,6 @@ func UpdateStudent(storage storage.Storage) http.HandlerFunc {
 			response.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "Failed to update student"})
 			return
 		}
-
 		response.WriteJson(w, http.StatusOK, map[string]string{"message": "Student updated successfully"})
 	}
 }
