@@ -13,7 +13,6 @@ type Sqlite struct {
 	Db *sql.DB
 }
 
-// Students
 
 func New(cfg *config.Config) (*Sqlite, error) {
 	db, err := sql.Open("sqlite3", cfg.StoragePath)
@@ -111,6 +110,42 @@ func (s *Sqlite) GetStudentById(id int64) (models.Student, error) {
 
 	return student, nil
 }
+
+func (s *Sqlite) GetAllStudents() ([]models.Student, error) {
+	rows, err := s.Db.Query("SELECT * FROM students")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var students []models.Student
+
+	for rows.Next() {
+		var student models.Student
+		err := rows.Scan(
+			&student.Id,
+			&student.FullName,
+			&student.Email,
+			&student.Password,
+			&student.Age,
+			&student.Gender,
+			&student.PhoneNumber,
+			&student.DOB,
+			&student.Address,
+		)
+		if err != nil {
+			return nil, err
+		}
+		students = append(students, student)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return students, nil
+}
+
 
 // Courses
 

@@ -6,6 +6,7 @@ type Storage interface{
 	// Student
 	CreateStudent(name string,email string,password string,age int,gender string,phoneNumber string,DOB string,Address string)(int64,error)
 	GetStudentById(id int64) (models.Student,error)
+	GetAllStudents() ([]models.Student, error)
 
 
 	// Course
