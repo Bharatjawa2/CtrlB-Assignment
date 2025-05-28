@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github/Bharatjawa2/CtrlB_Assignment/internal/Storage"
+	"github/Bharatjawa2/CtrlB_Assignment/internal/config"
 	"github/Bharatjawa2/CtrlB_Assignment/models"
 	"github/Bharatjawa2/CtrlB_Assignment/utils/response"
 	"github/Bharatjawa2/CtrlB_Assignment/utils/security"
@@ -12,8 +13,10 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func Register(storage storage.Storage) http.HandlerFunc {
@@ -67,6 +70,55 @@ func Register(storage storage.Storage) http.HandlerFunc {
 		response.WriteJson(w, http.StatusCreated, map[string]int64{"id": lastid})
 	}
 }
+
+func LoginStudent(storage storage.Storage, cfg config.Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var creds struct {
+			Email    string `json:"email"`
+			Password string `json:"password"`
+		}
+
+		err := json.NewDecoder(r.Body).Decode(&creds)
+		if err != nil {
+			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			return
+		}
+
+		student, err := storage.GetStudentByEmail(creds.Email)
+		if err != nil || !security.CheckPasswordHash(creds.Password, student.Password) {
+			http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+			return
+		}
+
+		// Generate JWT
+		claims := jwt.MapClaims{
+			"email": student.Email,
+			"id":    student.Id,
+			"exp":   time.Now().Add(24 * time.Hour).Unix(),
+		}
+
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		signedToken, err := token.SignedString([]byte(cfg.JWTSecret))
+		if err != nil {
+			http.Error(w, "Could not generate token", http.StatusInternalServerError)
+			return
+		}
+
+		// Set token in cookie
+		http.SetCookie(w, &http.Cookie{
+			Name:     "auth_token",
+			Value:    signedToken,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   false, // true in production with HTTPS
+			SameSite: http.SameSiteLaxMode,
+		})
+
+		response.WriteJson(w, http.StatusOK, map[string]string{"message": "Login successful"})
+	}
+}
+
+
 
 func GetById(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -180,4 +232,21 @@ func GetStudentByEmail(storage storage.Storage) http.HandlerFunc {
 		}
 		response.WriteJson(w, http.StatusOK, student)
 	}
+}
+
+func Logout() http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        http.SetCookie(w, &http.Cookie{
+            Name:     "auth_token",
+            Value:    "",
+            Path:     "/",
+            Expires:  time.Unix(0, 0), // Set expiration to Unix epoch to expire immediately
+            HttpOnly: true,
+            Secure:   false, // Set true in production with HTTPS
+            SameSite: http.SameSiteLaxMode,
+        })
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusOK)
+        w.Write([]byte(`{"message":"Logged out successfully"}`))
+    }
 }

@@ -6,7 +6,7 @@ import (
 	"github/Bharatjawa2/CtrlB_Assignment/internal/config"
 	"github/Bharatjawa2/CtrlB_Assignment/internal/http/Handlers/courses"
 	"github/Bharatjawa2/CtrlB_Assignment/internal/http/Handlers/enrollment"
-	"github/Bharatjawa2/CtrlB_Assignment/internal/http/Handlers/middlewares"
+	"github/Bharatjawa2/CtrlB_Assignment/internal/http/middlewares"
 	"github/Bharatjawa2/CtrlB_Assignment/internal/http/Handlers/student"
 	"log"
 	"log/slog"
@@ -32,16 +32,18 @@ func main(){
 
 	// Student
 		router.HandleFunc("POST /api/students",student.Register(storage))
+		router.HandleFunc("POST /api/students/login",student.LoginStudent(storage,*cfg))
 		router.HandleFunc("GET /api/students/{id}",student.GetById(storage))
 		router.HandleFunc("GET /api/students/all",student.GetAllStudents(storage))
 		router.HandleFunc("GET /api/students",student.GetStudentByEmail(storage))
-		router.HandleFunc("PUT /api/students/update/{id}",middlewares.AuthMiddleware(student.UpdateStudent(storage)))
+		router.HandleFunc("PUT /api/students/update/{id}",middlewares.AuthMiddleware(cfg.JWTSecret, student.UpdateStudent(storage)))
+		router.HandleFunc("POST /api/students/logout",student.Logout())
 
 	// Courses
 		router.HandleFunc("POST /api/courses",courses.CreateCourse(storage))
 		router.HandleFunc("GET /api/courses/{id}",courses.GetCourseById(storage))
 		router.HandleFunc("GET /api/courses/all",courses.GetAllCourses(storage))
-		router.HandleFunc("PUT /api/courses/update/{id}",middlewares.AuthMiddleware(courses.UpdateCourse(storage)))
+		router.HandleFunc("PUT /api/courses/update/{id}",middlewares.AuthMiddleware(cfg.JWTSecret,courses.UpdateCourse(storage)))
 		router.HandleFunc("GET /api/courses/search",courses.SearchCoursesByName(storage))
 
 	// Enrollment

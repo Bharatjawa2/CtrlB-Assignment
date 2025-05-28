@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github/Bharatjawa2/CtrlB_Assignment/internal/config"
 	"github/Bharatjawa2/CtrlB_Assignment/models"
+	security "github/Bharatjawa2/CtrlB_Assignment/utils/security"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -90,6 +91,19 @@ func (s *Sqlite) CreateStudent(FullName string, Email string, Password string, A
 
 	return lastid, nil
 }
+
+func (s *Sqlite) LoginStudent(email string, password string) (models.Student, error) {
+    student, err := s.GetStudentByEmail(email)
+    if err != nil {
+        return models.Student{}, fmt.Errorf("invalid email or password")
+    }
+    if !security.CheckPasswordHash(password, student.Password) {
+        return models.Student{}, fmt.Errorf("invalid email or password")
+    }
+    return student, nil
+}
+
+
 
 
 func (s *Sqlite) GetStudentByEmail(email string) (models.Student, error) {
@@ -204,6 +218,10 @@ func (s *Sqlite) UpdateStudent(id int64, student models.Student) (error) {
 		id,
 	)
 	return err
+}
+
+func (s *Sqlite) Logout()(error){
+	return nil
 }
 
 
