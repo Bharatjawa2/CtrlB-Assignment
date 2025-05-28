@@ -7,6 +7,7 @@ import (
 	"github/Bharatjawa2/CtrlB_Assignment/internal/Storage"
 	"github/Bharatjawa2/CtrlB_Assignment/models"
 	"github/Bharatjawa2/CtrlB_Assignment/utils/response"
+	"github/Bharatjawa2/CtrlB_Assignment/utils/security"
 	"io"
 	"log/slog"
 	"net/http"
@@ -39,10 +40,16 @@ func Register(storage storage.Storage) http.HandlerFunc {
 			return
 		}
 
+		hashedPassword, err:=security.HashPassword(student.Password)
+		if err!=nil{
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
 		lastid, err := storage.CreateStudent(
 			student.FullName,
 			student.Email,
-			student.Password,
+			hashedPassword,
 			student.Age,
 			student.Gender,
 			student.PhoneNumber,
@@ -90,5 +97,53 @@ func GetAllStudents(storage storage.Storage) http.HandlerFunc{
 			return
 		}
 		response.WriteJson(w, http.StatusOK, students)
+	}
+}
+
+func UpdateStudent(storage storage.Storage) http.HandlerFunc{
+	return func(w http.ResponseWriter, r *http.Request){
+		id:=r.PathValue("id")
+		if id==""{
+			response.WriteJson(w, http.StatusBadRequest, map[string]string{"error": "Missing student ID"})
+			return
+		}
+
+		studentId,err:=strconv.ParseInt(id,10,64)
+		if err!=nil{
+			response.WriteJson(w, http.StatusBadRequest,response.GeneralError(err))
+			return
+		}
+
+		var student models.Student
+		err = json.NewDecoder(r.Body).Decode(&student)
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, map[string]string{"error": "Invalid JSON"})
+			return
+		}
+
+		// validate Student
+		err = storage.UpdateStudent(studentId, student)
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": "Failed to update student"})
+			return
+		}
+		response.WriteJson(w, http.StatusOK, map[string]string{"message": "Student updated successfully"})
+	
+	}
+}
+
+func GetStudentByEmail(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		email := r.URL.Query().Get("email") // Want to Fetch from Query parameters 
+		if email == "" {
+			response.WriteJson(w, http.StatusBadRequest, map[string]string{"error": "Missing email query parameter"})
+			return
+		}
+		student, err := storage.GetStudentByEmail(email)
+		if err != nil {
+			response.WriteJson(w, http.StatusNotFound, map[string]string{"error": "Student not found"})
+			return
+		}
+		response.WriteJson(w, http.StatusOK, student)
 	}
 }

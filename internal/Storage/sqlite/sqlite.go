@@ -91,6 +91,36 @@ func (s *Sqlite) CreateStudent(FullName string, Email string, Password string, A
 	return lastid, nil
 }
 
+
+func (s *Sqlite) GetStudentByEmail(email string) (models.Student, error) {
+    stmt, err := s.Db.Prepare("SELECT * FROM students WHERE Email = ? LIMIT 1")
+    if err != nil {
+        return models.Student{}, err
+    }
+    defer stmt.Close()
+
+    var student models.Student
+    err = stmt.QueryRow(email).Scan(
+        &student.Id,
+        &student.FullName,
+        &student.Email,
+        &student.Password,
+        &student.Age,
+        &student.Gender,
+        &student.PhoneNumber,
+        &student.DOB,
+        &student.Address,
+    )
+    if err != nil {
+        if err == sql.ErrNoRows {
+            return models.Student{}, fmt.Errorf("no Student Found with email %s", email)
+        }
+        return models.Student{}, err
+    }
+
+    return student, nil
+}
+
 func (s *Sqlite) GetStudentById(id int64) (models.Student, error) {
 	stmt, err := s.Db.Prepare("SELECT * FROM students WHERE id = ? LIMIT 1")
 	if err != nil {
@@ -145,6 +175,37 @@ func (s *Sqlite) GetAllStudents() ([]models.Student, error) {
 
 	return students, nil
 }
+
+func (s *Sqlite) UpdateStudent(id int64, student models.Student) error {
+	stmt, err := s.Db.Prepare(`UPDATE students SET 
+		FullName = ?, 
+		Email = ?, 
+		Password = ?, 
+		Age = ?, 
+		Gender = ?, 
+		PhoneNumber = ?, 
+		DOB = ?, 
+		Address = ? 
+		WHERE id = ?`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(
+		student.FullName,
+		student.Email,
+		student.Password, // We'll hash this later
+		student.Age,
+		student.Gender,
+		student.PhoneNumber,
+		student.DOB,
+		student.Address,
+		id,
+	)
+	return err
+}
+
 
 
 // Courses
