@@ -31,6 +31,11 @@ func main(){
 	// setup router
 	router:=http.NewServeMux()
 
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    	w.Write([]byte("Welcome to CtrlB Backend!"))
+	})
+
+
 	// Admin
 		router.HandleFunc("POST /api/admin",admin.LoginAdmin(*cfg))
 		router.HandleFunc("POST /api/admin/logout",middlewares.AdminMiddleware(cfg.JWTSecret,admin.Logout()))
